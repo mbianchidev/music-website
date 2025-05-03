@@ -72,11 +72,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // YouTube Video functionality
-    const videoWrappers = document.querySelectorAll('.video-wrapper');
+    const carouselSlide = document.querySelectorAll('.carousel-slide');
     
-    videoWrappers.forEach(wrapper => {
-        wrapper.addEventListener('click', function() {
-            const videoId = this.getAttribute('data-video-id');
+    carouselSlide.forEach(slide => {
+        slide.addEventListener('click', function() {
+            // Get the video ID from the carousel slide
+            const videoWrapper = this.querySelector('.video-wrapper');
+  
+            // Get the 'data-video-id' attribute value
+            const videoId = videoWrapper.getAttribute('data-video-id');
+  
+            // Get the video title from the h4 element
             const videoTitle = this.parentElement.querySelector('h4').textContent;
             
             // Create a modal for the YouTube video
