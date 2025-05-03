@@ -1,6 +1,9 @@
 // Metal Singer Portfolio - Scripts
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize EmailJS
+    emailjs.init("2FT4effYC4SSjt4jV"); // Replace with your actual EmailJS public key
+    
     // Update copyright year
     document.getElementById('current-year').textContent = new Date().getFullYear();
 
@@ -11,10 +14,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const nextBtn = document.querySelector('.next-btn');
     let currentIndex = 0;
     const totalSlides = slides.length;
+    
+    // Initial setup - hide all slides except the first one
+    function initCarousel() {
+        slides.forEach((slide, index) => {
+            if (index !== 0) {
+                slide.style.display = 'none';
+            }
+        });
+    }
+    
+    // Call initial setup
+    initCarousel();
 
     // Set up carousel
     function updateCarousel() {
-        carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+        // Hide all slides
+        slides.forEach(slide => {
+            slide.style.display = 'none';
+        });
+        
+        // Show only the current slide
+        slides[currentIndex].style.display = 'block';
     }
 
     // Next slide
@@ -36,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Auto-advance carousel every 5 seconds
-    const carouselInterval = setInterval(nextSlide, 5000);
+    let carouselInterval = setInterval(nextSlide, 5000);
 
     // Pause auto-advance on mouse hover
     if (carousel) {
@@ -46,28 +67,73 @@ document.addEventListener('DOMContentLoaded', function() {
         
         carousel.addEventListener('mouseleave', () => {
             clearInterval(carouselInterval);
-            setInterval(nextSlide, 5000);
+            carouselInterval = setInterval(nextSlide, 5000);
         });
     }
 
-    // Video play functionality (in a real scenario, these would open YouTube embeds)
+    // YouTube Video functionality
     const videoWrappers = document.querySelectorAll('.video-wrapper');
     
     videoWrappers.forEach(wrapper => {
         wrapper.addEventListener('click', function() {
-            // This is a placeholder - in a real site this would open a YouTube video
-            // or a modal with an embedded video
+            const videoId = this.getAttribute('data-video-id');
             const videoTitle = this.parentElement.querySelector('h4').textContent;
-            alert(`Playing video: ${videoTitle}\n\nIn a live site, this would open the actual YouTube video.`);
+            
+            // Create a modal for the YouTube video
+            const modal = document.createElement('div');
+            modal.className = 'video-modal';
+            
+            const modalContent = document.createElement('div');
+            modalContent.className = 'modal-content';
+            
+            // Close button
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'modal-close';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.addEventListener('click', () => {
+                document.body.removeChild(modal);
+                document.body.classList.remove('modal-open');
+            });
+            
+            // YouTube iframe
+            const iframe = document.createElement('iframe');
+            iframe.width = '100%';
+            iframe.height = '100%';
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            iframe.title = videoTitle;
+            iframe.frameBorder = '0';
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+            
+            // Append elements
+            modalContent.appendChild(closeBtn);
+            modalContent.appendChild(iframe);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            document.body.classList.add('modal-open');
+            
+            // Close modal on background click
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                    document.body.classList.remove('modal-open');
+                }
+            });
         });
     });
 
-    // Form submission
+    // Form submission with EmailJS
     const bookingForm = document.getElementById('booking-form');
     
     if (bookingForm) {
         bookingForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Show loading state
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.textContent;
+            submitButton.textContent = "SENDING...";
+            submitButton.disabled = true;
             
             // Get form data
             const name = document.getElementById('name').value;
@@ -75,12 +141,42 @@ document.addEventListener('DOMContentLoaded', function() {
             const experience = document.getElementById('experience').value;
             const message = document.getElementById('message').value;
             
-            // In a real scenario, this would send data to a server
-            // For now, just show a confirmation
-            alert(`🤘 HELL YEAH, ${name}! 🤘\n\nYour request to join the vocal slaughter has been received. We'll contact you at ${email} to schedule your introductory session. PREPARE YOUR THROAT!`);
+            // Prepare template parameters
+            const templateParams = {
+                name: "Matteo Bianchi",
+                email: "black.corekid00@gmail.com",
+                from_name: name,
+                from_email: email,
+                experience_level: experience,
+                message: message,
+                reply_to: email
+            };
             
-            // Reset form
-            bookingForm.reset();
+            // Send email using EmailJS
+            emailjs.send('service_7k7zuyd', 'template_pgu0qr7', templateParams)
+                .then(function(response) {
+                    console.log('SUCCESS!', response.status, response.text);
+                    
+                    // Show success message
+                    alert(`🤘 HELL YEAH, ${name}! 🤘\n\nYour request to join the vocal slaughter has been received. We'll contact you at ${email} to schedule your introductory session. PREPARE YOURSELF!`);
+                    
+                    // Reset form
+                    bookingForm.reset();
+                    
+                    // Reset button
+                    submitButton.textContent = originalButtonText;
+                    submitButton.disabled = false;
+                })
+                .catch(function(error) {
+                    console.log('FAILED...', error);
+                    
+                    // Show error message
+                    alert('Failed to send your message. Please try again or contact me directly at black.corekid00@gmail.com');
+                    
+                    // Reset button
+                    submitButton.textContent = originalButtonText;
+                    submitButton.disabled = false;
+                });
         });
     }
 

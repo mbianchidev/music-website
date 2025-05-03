@@ -5,15 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matteo Bianchi | Metal Vocalist</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Metal+Mania&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
     <div class="noise-overlay"></div>
     
     <header>
         <div class="container">
-            <h1>MATTEO BIANCHI</h1>
+            <h1>MATTEO "BLACK" BIANCHI</h1>
             <h2>METAL VOCALIST FROM HELL</h2>
         </div>
     </header>
@@ -29,11 +31,28 @@
                     <h3>UNLEASH YOUR INNER BEAST</h3>
                     <p>Shattering eardrums and crushing souls since 2010. My vocal techniques span from guttural growls to bone-chilling screams that will make your ancestors weep.</p>
                     <div class="social-icons">
-                        <a href="https://youtube.com/" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                        <a href="https://instagram.com/" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="https://bsky.app/" target="_blank" aria-label="Bluesky"><i class="fa-brands fa-bluesky"></i></a>
+                        <a href="https://www.youtube.com/@b143ck" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://instagram.com/b143ck_" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://mbianchidev.bsky.social" target="_blank" aria-label="Bluesky"><i class="fas fa-hashtag"></i></a>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="bio" class="bio-section">
+        <div class="container">
+            <h2>MY METAL JOURNEY</h2>
+            <div class="bio-content">
+                <p>I started screaming my lungs out at a very young age, around 14, absolutely destroying my voice and sounding like crap for a while.</p>
+                
+                <p>After a couple of years of relentless practice, I finally found my voice and embraced techniques that allowed me to unleash my full potential.</p>
+                
+                <p>After quite some touring and performing, I gained invaluable experience that shaped my style.</p>
+
+                <p>My journey has been filled with challenges, but each performance has only fueled my passion for metal music.</p>
+
+                <p>Now, I want to share my knowledge and help aspiring vocalists unleash their true potential.</p>
             </div>
         </div>
     </section>
@@ -49,29 +68,35 @@
                 <div class="carousel-container">
                     <div class="carousel-slide">
                         <div class="video-item">
-                            <div class="video-wrapper">
-                                <img src="https://placehold.co/600x340/333/f00?text=BRUTAL+VOCALS" alt="Metal performance video thumbnail">
+                            <div class="video-wrapper" data-video-id="Qod39zRvfns">
+                                <img src="https://img.youtube.com/vi/Qod39zRvfns/maxresdefault.jpg" alt="Northlane - Quantum Flux (Cover)">
                                 <div class="play-button"><i class="fas fa-play"></i></div>
+                                <div class="video-title">
+                                    <h4>NORTHLANE - QUANTUM FLUX (COVER)</h4>
+                                </div>
                             </div>
-                            <h4>WALL OF DEATH (LIVE 2024)</h4>
                         </div>
                     </div>
                     <div class="carousel-slide">
                         <div class="video-item">
-                            <div class="video-wrapper">
-                                <img src="https://placehold.co/600x340/333/f00?text=STUDIO+SESSION" alt="Studio session video thumbnail">
+                            <div class="video-wrapper" data-video-id="XBrvnVmkYJw">
+                                <img src="https://img.youtube.com/vi/XBrvnVmkYJw/maxresdefault.jpg" alt="Darkness Brought Me Here - Silence">
                                 <div class="play-button"><i class="fas fa-play"></i></div>
+                                <div class="video-title">
+                                    <h4>DARKNESS BROUGHT ME HERE - SILENCE</h4>
+                                </div>
                             </div>
-                            <h4>RECORDING "ETERNAL DARKNESS"</h4>
                         </div>
                     </div>
                     <div class="carousel-slide">
                         <div class="video-item">
-                            <div class="video-wrapper">
-                                <img src="https://placehold.co/600x340/333/f00?text=VOCAL+TECHNIQUE" alt="Vocal technique video thumbnail">
+                            <div class="video-wrapper" data-video-id="mqukHybn6zg">
+                                <img src="https://img.youtube.com/vi/uAw0-eITd5A/maxresdefault.jpg" alt="Darko US - Insects (Cover)">
                                 <div class="play-button"><i class="fas fa-play"></i></div>
+                                <div class="video-title">
+                                    <h4>DARKO US - INSECTS (COVER)</h4>
+                                </div>
                             </div>
-                            <h4>MASTERING THE DEATH GROWL</h4>
                         </div>
                     </div>
                 </div>
@@ -96,9 +121,10 @@
                         <li><i class="fas fa-fire"></i> Develop piercing high screams that will shatter glass</li>
                         <li><i class="fas fa-lungs"></i> Build proper breathing techniques to sustain your fury</li>
                         <li><i class="fas fa-hand-rock"></i> Learn to scream WITHOUT destroying your vocal cords</li>
+                        <li><i class="fas fa-microphone"></i> Improve your stage presence and performance skills</li>
                     </ul>
                     <div class="course-cta">
-                        <a href="#book-call" class="btn btn-primary">BOOK YOUR FIRST BLOODCURDLING SESSION</a>
+                        <a href="https://mb-consulting.dev/book30" class="btn btn-primary">BOOK YOUR FIRST SESSION NOW</a>
                     </div>
                 </div>
                 <div class="course-image">
@@ -110,8 +136,8 @@
     
     <section id="book-call" class="booking-section">
         <div class="container">
-            <h2>SUMMON THE VOCAL DEMON</h2>
-            <p>Book your FREE 30-minute introductory call to see if you have what it takes to unleash your inner beast.</p>
+            <h2>SUMMON YOUR VOCAL DEMON</h2>
+            <p>Email me your story, to see if you have what it takes to unleash your inner beast.</p>
             
             <form id="booking-form" class="booking-form">
                 <div class="form-group">
@@ -145,9 +171,9 @@
                 </div>
                 <div class="footer-social">
                     <div class="social-icons">
-                        <a href="https://youtube.com/" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                        <a href="https://instagram.com/" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="https://bsky.app/" target="_blank" aria-label="Bluesky"><i class="fa-brands fa-bluesky"></i></a>
+                        <a href="https://www.youtube.com/@b143ck" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://instagram.com/b143ck_" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://mbianchidev.bsky.social" target="_blank" aria-label="Bluesky"><i class="fas fa-hashtag"></i></a>
                     </div>
                 </div>
             </div>
