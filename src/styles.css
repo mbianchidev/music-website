@@ -621,6 +621,7 @@ section.revealed {
     justify-content: center;
     align-items: center;
     z-index: 9999;
+    padding: 20px;
 }
 
 .modal-content {
@@ -698,6 +699,45 @@ body.modal-open {
     
     .social-icons {
         justify-content: center;
+    }
+    
+    /* Responsive carousel styles */
+    .video-carousel {
+        flex-direction: column;
+    }
+    
+    .carousel-container {
+        width: 100%;
+    }
+    
+    .play-button {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+    
+    .carousel-btn {
+        position: relative;
+        margin: 10px 5px;
+        width: 36px;
+        height: 36px;
+    }
+    
+    /* Fix video carousel controls positioning */
+    .carousel-btn.prev-btn, 
+    .carousel-btn.next-btn {
+        position: static;
+        display: inline-flex;
+        margin-top: 15px;
+    }
+    
+    /* Modal responsive fixes */
+    .modal-close {
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        font-size: 1.2rem;
     }
     
     .footer-content {
