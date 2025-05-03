@@ -131,9 +131,43 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form submission with EmailJS
     const bookingForm = document.getElementById('booking-form');
     
+    // Email validation regex pattern
+    const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    
+    // Validate form function
+    function validateForm() {
+        const email = document.getElementById('email').value;
+        const message = document.getElementById('message').value;
+        let isValid = true;
+        let errorMessage = "";
+        
+        // Email validation
+        if (!emailRegex.test(email)) {
+            errorMessage += "Please enter a valid email address.\n";
+            isValid = false;
+        }
+        
+        // Message length validation
+        if (message.length < 50) {
+            errorMessage += `Your message is too short. Please provide at least 50 characters (currently: ${message.length}).\n`;
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            alert(errorMessage);
+        }
+        
+        return isValid;
+    }
+    
     if (bookingForm) {
         bookingForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Validate form before submission
+            if (!validateForm()) {
+                return; // Stop form submission if validation fails
+            }
             
             // Show loading state
             const submitButton = this.querySelector('button[type="submit"]');
