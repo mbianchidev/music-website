@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get form data
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
-            const experience = document.getElementById('experience').value;
+            const request = document.getElementById('request').value;
             const message = document.getElementById('message').value;
             
             // Prepare template parameters
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 email: "black.corekid00@gmail.com",
                 from_name: name,
                 from_email: email,
-                experience_level: experience,
+                form_request: request,
                 message: message,
                 reply_to: email
             };
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('SUCCESS!', response.status, response.text);
                     
                     // Show success message
-                    alert(`🤘 HELL YEAH, ${name}! 🤘\n\nYour request to join my vocal slaughter has been received. I'll contact you at ${email} to ask you questions or directly schedule your introductory session. PREPARE YOURSELF!`);
+                    alert(`🤘 HELL YEAH, ${name}! 🤘\n\nYour request has been sent. I'll contact you at ${email} to ask you questions or directly schedule an introductory call. PREPARE YOURSELF!`);
                     
                     // Reset form
                     bookingForm.reset();
