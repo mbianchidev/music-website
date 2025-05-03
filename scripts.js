@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('SUCCESS!', response.status, response.text);
                     
                     // Show success message
-                    alert(`🤘 HELL YEAH, ${name}! 🤘\n\nYour request to join the vocal slaughter has been received. We'll contact you at ${email} to schedule your introductory session. PREPARE YOURSELF!`);
+                    alert(`🤘 HELL YEAH, ${name}! 🤘\n\nYour request to join my vocal slaughter has been received. I'll contact you at ${email} to ask you questions or directly schedule your introductory session. PREPARE YOURSELF!`);
                     
                     // Reset form
                     bookingForm.reset();
