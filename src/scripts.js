@@ -81,6 +81,13 @@ document.addEventListener('DOMContentLoaded', function() {
   
             // Get the 'data-video-id' attribute value
             const videoId = videoWrapper.getAttribute('data-video-id');
+            
+            // Validate the video ID
+            const validVideoIdPattern = /^[a-zA-Z0-9_-]{11}$/;
+            if (!validVideoIdPattern.test(videoId)) {
+                console.error('Invalid video ID:', videoId);
+                return;
+            }
   
             // Get the video title from the h4 element
             const videoTitle = this.parentElement.querySelector('h4').textContent;
