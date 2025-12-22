@@ -13,8 +13,8 @@ The GitHub Copilot coding agent workflow is currently failing due to repository 
 4. Save changes
 
 **Detailed Guide:**
-- See [FIX_COPILOT_WORKFLOW.md](./FIX_COPILOT_WORKFLOW.md) for step-by-step instructions
-- See [../COPILOT_WORKFLOW_FIX.md](../COPILOT_WORKFLOW_FIX.md) for technical details
+- See [FIX_COPILOT_WORKFLOW.md](FIX_COPILOT_WORKFLOW.md) for step-by-step instructions
+- See [/COPILOT_WORKFLOW_FIX.md](/COPILOT_WORKFLOW_FIX.md) for technical details
 
 ## 📊 Issue Summary
 

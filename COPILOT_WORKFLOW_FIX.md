@@ -116,9 +116,10 @@ See "Quick Fix" above.
 
 1. **Verify the bypass was added:**
    ```bash
-   # List rulesets to see if copilot-swe-agent is in bypass list
+   # List all rulesets with their configuration
    gh api repos/mbianchidev/music-website/rulesets
    ```
+   Look through the output for the bypass_actors list to confirm `copilot-swe-agent` is included.
 
 2. **Check rules for copilot branches:**
    ```bash

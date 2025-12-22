@@ -137,7 +137,7 @@ This diagram shows what happens in a Copilot workflow and where the failure occu
 |-----------|-------------------|------------------|
 | Copilot makes changes | ✅ Working | ✅ Working |
 | Commits created | ✅ Working | ✅ Working |
-| Push to GitHub | ❌ **FAILS** | ✅ **WORKS** |
+| Push to GitHub | ❌ FAILS | ✅ WORKS |
 | PR shows changes | ❌ 0 files | ✅ Shows actual files |
 | Workflow completes | ❌ Fails ~20min | ✅ Completes successfully |
 
