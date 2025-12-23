@@ -43,20 +43,32 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const enteredPassword = passwordInput.value;
-            // SECURITY NOTE: The default password is visible in source code.
-            // Admin should set a custom password via the admin panel before sharing resources.
-            // For true security, implement server-side authentication.
-            const storedPassword = localStorage.getItem('resourcePassword') || 'metal666';
+            const storedPassword = localStorage.getItem('resourcePassword');
+
+            // If no password has been configured, do not allow access with a hardcoded default.
+            if (!storedPassword) {
+                if (passwordError) {
+                    passwordError.textContent = 'Resources are not yet configured. Please contact the site administrator.';
+                    passwordError.style.display = 'block';
+                }
+                passwordInput.value = '';
+                return;
+            }
             
             if (enteredPassword === storedPassword) {
                 // Success - show protected content
                 sessionStorage.setItem('resourcesAuthenticated', 'true');
                 showProtectedContent();
-                passwordError.style.display = 'none';
+                if (passwordError) {
+                    passwordError.style.display = 'none';
+                }
                 passwordInput.value = '';
             } else {
                 // Failed - show error
-                passwordError.style.display = 'block';
+                if (passwordError) {
+                    passwordError.textContent = 'Incorrect password. Try again, mortal!';
+                    passwordError.style.display = 'block';
+                }
                 passwordInput.value = '';
                 passwordInput.focus();
             }
@@ -201,11 +213,12 @@ function viewPdf(index) {
         title.className = 'pdf-title';
         title.id = 'pdf-modal-title';
         
-        // PDF embed
+        // PDF embed with sandbox for security
         const pdfEmbed = document.createElement('iframe');
         pdfEmbed.src = resource.data;
         pdfEmbed.className = 'pdf-viewer';
         pdfEmbed.title = resource.title;
+        pdfEmbed.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-popups allow-forms');
         
         // Download button
         const downloadBtn = document.createElement('a');

@@ -1,5 +1,14 @@
 // Admin Page - Manage Resources
 
+// Validation constants
+const MIN_USERNAME_LENGTH = 5;
+const MIN_PASSWORD_LENGTH = 8;
+const MAX_TITLE_LENGTH = 200;
+// localStorage typically allows 5-10MB total; we limit individual PDFs to 5MB 
+// to leave room for multiple files and other data
+const MAX_PDF_SIZE_MB = 5;
+const MAX_PDF_SIZE_BYTES = MAX_PDF_SIZE_MB * 1024 * 1024;
+
 document.addEventListener('DOMContentLoaded', function() {
     // Update copyright year
     const yearElement = document.getElementById('current-year');
@@ -99,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const newPassword = newResourcePassword.value;
             
-            if (newPassword.length >= 8) {
+            if (newPassword.length >= MIN_PASSWORD_LENGTH) {
                 localStorage.setItem('resourcePassword', newPassword);
                 passwordSuccess.style.display = 'block';
                 newResourcePassword.value = '';
@@ -130,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const username = newAdminUsername.value.trim();
             const password = newAdminPassword.value;
             
-            if (username.length >= 5 && password.length >= 8) {
+            if (username.length >= MIN_USERNAME_LENGTH && password.length >= MIN_PASSWORD_LENGTH) {
                 localStorage.setItem('adminUsername', username);
                 localStorage.setItem('adminPassword', password);
                 credentialsSuccess.style.display = 'block';
@@ -143,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 3000);
             } else {
                 if (credentialsError) {
-                    credentialsError.textContent = 'Username must be at least 5 characters and password at least 8 characters.';
+                    credentialsError.textContent = 'Username must be at least ' + MIN_USERNAME_LENGTH + ' characters and password at least ' + MIN_PASSWORD_LENGTH + ' characters.';
                     credentialsError.style.display = 'block';
                     setTimeout(() => {
                         credentialsError.style.display = 'none';
@@ -173,6 +182,23 @@ document.addEventListener('DOMContentLoaded', function() {
             const description = pdfDescription.value.trim();
             const file = pdfFile.files[0];
             
+            // Validate that the title is not empty after trimming
+            if (!title) {
+                uploadError.textContent = 'Please enter a title.';
+                uploadError.style.display = 'block';
+                if (pdfTitle && typeof pdfTitle.focus === 'function') {
+                    pdfTitle.focus();
+                }
+                return;
+            }
+            
+            // Validate title length
+            if (title.length > MAX_TITLE_LENGTH) {
+                uploadError.textContent = 'Title must be ' + MAX_TITLE_LENGTH + ' characters or fewer.';
+                uploadError.style.display = 'block';
+                return;
+            }
+            
             if (!file) {
                 uploadError.textContent = 'Please select a PDF file.';
                 uploadError.style.display = 'block';
@@ -185,10 +211,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Check file size (limit to 5MB for localStorage)
-            const maxSize = 5 * 1024 * 1024; // 5MB
-            if (file.size > maxSize) {
-                uploadError.textContent = 'File size exceeds 5MB limit. Please use a smaller file.';
+            // Check file size (limit for localStorage storage constraints)
+            if (file.size > MAX_PDF_SIZE_BYTES) {
+                uploadError.textContent = 'File size exceeds ' + MAX_PDF_SIZE_MB + 'MB limit. Please use a smaller file.';
                 uploadError.style.display = 'block';
                 return;
             }
