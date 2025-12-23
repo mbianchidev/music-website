@@ -43,7 +43,10 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const enteredPassword = passwordInput.value;
-            const storedPassword = localStorage.getItem('resourcePassword') || 'metal666'; // Default password
+            // SECURITY NOTE: The default password is visible in source code.
+            // Admin should set a custom password via the admin panel before sharing resources.
+            // For true security, implement server-side authentication.
+            const storedPassword = localStorage.getItem('resourcePassword') || 'metal666';
             
             if (enteredPassword === storedPassword) {
                 // Success - show protected content

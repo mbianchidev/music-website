@@ -48,9 +48,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const adminResourcesList = document.getElementById('admin-resources-list');
 
-    // Admin credentials (in production, this should be server-side)
-    const ADMIN_USERNAME = 'admin';
-    const ADMIN_PASSWORD = 'metaladmin666';
+    // SECURITY NOTE: These credentials are stored client-side and are visible in the source code.
+    // This is a limitation of static sites without a backend server.
+    // For production use with sensitive content, consider:
+    // 1. Using a backend authentication service
+    // 2. Using a service like Firebase Auth or Auth0
+    // 3. Hosting behind a server with proper authentication
+    // The admin should change these default credentials after initial setup.
+    const ADMIN_USERNAME = localStorage.getItem('adminUsername') || 'admin';
+    const ADMIN_PASSWORD = localStorage.getItem('adminPassword') || 'metaladmin666';
 
     // Check if admin is already logged in
     checkAdminAuth();
@@ -101,6 +107,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
                     passwordSuccess.style.display = 'none';
                 }, 3000);
+            }
+        });
+    }
+
+    // Admin credentials form
+    const adminCredentialsForm = document.getElementById('admin-credentials-form');
+    const newAdminUsername = document.getElementById('new-admin-username');
+    const newAdminPassword = document.getElementById('new-admin-password');
+    const credentialsSuccess = document.getElementById('credentials-success');
+    
+    if (adminCredentialsForm) {
+        adminCredentialsForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = newAdminUsername.value.trim();
+            const password = newAdminPassword.value;
+            
+            if (username.length >= 3 && password.length >= 6) {
+                localStorage.setItem('adminUsername', username);
+                localStorage.setItem('adminPassword', password);
+                credentialsSuccess.style.display = 'block';
+                newAdminUsername.value = '';
+                newAdminPassword.value = '';
+                
+                setTimeout(() => {
+                    credentialsSuccess.style.display = 'none';
+                }, 3000);
+            } else {
+                alert('Username must be at least 3 characters and password at least 6 characters.');
             }
         });
     }
@@ -263,12 +298,37 @@ function deleteResource(index) {
         resources.splice(index, 1);
         localStorage.setItem('pdfResources', JSON.stringify(resources));
         
-        // Refresh the list
+        // Refresh the resources list by rebuilding the HTML
         const adminResourcesList = document.getElementById('admin-resources-list');
         if (resources.length === 0) {
             adminResourcesList.innerHTML = '<p class="no-resources">No resources uploaded yet.</p>';
         } else {
-            location.reload(); // Simple refresh to update indices
+            // Rebuild the list with updated indices
+            adminResourcesList.innerHTML = resources.map((resource, idx) => `
+                <div class="resource-card admin-resource-card">
+                    <div class="resource-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div class="resource-info">
+                        <h4>${escapeHtmlGlobal(resource.title)}</h4>
+                        <p>${escapeHtmlGlobal(resource.description || 'No description provided.')}</p>
+                        <span class="resource-date">Added: ${new Date(resource.dateAdded).toLocaleDateString()}</span>
+                        <span class="resource-file">${escapeHtmlGlobal(resource.fileName || 'Unknown file')}</span>
+                    </div>
+                    <div class="resource-actions">
+                        <button class="btn btn-delete" onclick="deleteResource(${idx})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
     }
+}
+
+// Helper function for escaping HTML in global scope
+function escapeHtmlGlobal(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
