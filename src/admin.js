@@ -315,7 +315,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const deleteButton = document.createElement('button');
             deleteButton.className = 'btn btn-delete';
             deleteButton.type = 'button';
-            deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete';
+            const deleteIcon = document.createElement('i');
+            deleteIcon.className = 'fas fa-trash';
+            deleteButton.appendChild(deleteIcon);
+            deleteButton.appendChild(document.createTextNode(' Delete'));
             deleteButton.addEventListener('click', function() {
                 deleteResource(index, loadAdminResources);
             });
@@ -342,12 +345,18 @@ function deleteResource(index, refreshCallback) {
         if (typeof refreshCallback === 'function') {
             refreshCallback();
         } else {
-            // Fallback: reload the page if no callback provided
+            // Fallback: rebuild the list manually
             const adminResourcesList = document.getElementById('admin-resources-list');
-            if (resources.length === 0) {
-                adminResourcesList.innerHTML = '<p class="no-resources">No resources uploaded yet.</p>';
-            } else {
-                window.location.reload();
+            if (adminResourcesList) {
+                if (resources.length === 0) {
+                    const noResourcesMsg = document.createElement('p');
+                    noResourcesMsg.className = 'no-resources';
+                    noResourcesMsg.textContent = 'No resources uploaded yet.';
+                    adminResourcesList.innerHTML = '';
+                    adminResourcesList.appendChild(noResourcesMsg);
+                }
+                // If there are still resources but no callback, the list will be stale
+                // This fallback scenario should rarely occur since we always pass the callback
             }
         }
     }

@@ -139,7 +139,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const viewButton = document.createElement('button');
             viewButton.className = 'btn btn-view';
             viewButton.type = 'button';
-            viewButton.innerHTML = '<i class="fas fa-eye"></i> View';
+            const viewIcon = document.createElement('i');
+            viewIcon.className = 'fas fa-eye';
+            viewButton.appendChild(viewIcon);
+            viewButton.appendChild(document.createTextNode(' View'));
             viewButton.addEventListener('click', function() {
                 viewPdf(index);
             });
