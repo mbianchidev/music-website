@@ -1,5 +1,15 @@
 // Resources Page - Password Protected Content
 
+// Hash a password using SHA-256 (async)
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Update copyright year
     const yearElement = document.getElementById('current-year');
@@ -39,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Password form submission
     if (passwordForm) {
-        passwordForm.addEventListener('submit', function(e) {
+        passwordForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const enteredPassword = passwordInput.value;
@@ -55,7 +65,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            if (enteredPassword === storedPassword) {
+            // Hash the entered password to compare with stored hash
+            const hashedPassword = await hashPassword(enteredPassword);
+            
+            // Check if password matches (supports both hashed and legacy plaintext)
+            const isValid = hashedPassword === storedPassword || enteredPassword === storedPassword;
+            
+            if (isValid) {
                 // Success - show protected content
                 sessionStorage.setItem('resourcesAuthenticated', 'true');
                 showProtectedContent();

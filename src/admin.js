@@ -9,6 +9,16 @@ const MAX_TITLE_LENGTH = 200;
 const MAX_PDF_SIZE_MB = 5;
 const MAX_PDF_SIZE_BYTES = MAX_PDF_SIZE_MB * 1024 * 1024;
 
+// Hash a password using SHA-256 (async)
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Update copyright year
     const yearElement = document.getElementById('current-year');
@@ -72,13 +82,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Login form submission
     if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const username = usernameInput.value;
             const password = passwordInput.value;
             
-            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+            // Hash the entered password to compare with stored hash
+            const hashedPassword = await hashPassword(password);
+            
+            // Check if credentials match (supports both hashed and legacy plaintext)
+            const isValidUser = username === ADMIN_USERNAME;
+            const isValidPassword = hashedPassword === ADMIN_PASSWORD || password === ADMIN_PASSWORD;
+            
+            if (isValidUser && isValidPassword) {
                 // Success - show dashboard
                 sessionStorage.setItem('adminAuthenticated', 'true');
                 showDashboard();
@@ -103,13 +120,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Password settings form
     if (passwordSettingsForm) {
-        passwordSettingsForm.addEventListener('submit', function(e) {
+        passwordSettingsForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const newPassword = newResourcePassword.value;
             
             if (newPassword.length >= MIN_PASSWORD_LENGTH) {
-                localStorage.setItem('resourcePassword', newPassword);
+                // Hash the password before storing for security
+                const hashedPassword = await hashPassword(newPassword);
+                localStorage.setItem('resourcePassword', hashedPassword);
                 passwordSuccess.style.display = 'block';
                 newResourcePassword.value = '';
                 
@@ -127,21 +146,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const credentialsSuccess = document.getElementById('credentials-success');
     const credentialsError = document.getElementById('credentials-error');
     
-    // Note: Passwords are stored in plaintext in localStorage to remain
-    // compatible with the existing login validation and resource handling.
+    // Note: Passwords are hashed using SHA-256 before storage.
     // WARNING: Client-side password storage is inherently insecure as localStorage
     // can be accessed via browser developer tools. For production use with sensitive
     // content, implement server-side authentication (e.g., Firebase Auth, Auth0).
     if (adminCredentialsForm) {
-        adminCredentialsForm.addEventListener('submit', function(e) {
+        adminCredentialsForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const username = newAdminUsername.value.trim();
             const password = newAdminPassword.value;
             
             if (username.length >= MIN_USERNAME_LENGTH && password.length >= MIN_PASSWORD_LENGTH) {
+                // Hash the password before storing for security
+                const hashedPassword = await hashPassword(password);
                 localStorage.setItem('adminUsername', username);
-                localStorage.setItem('adminPassword', password);
+                localStorage.setItem('adminPassword', hashedPassword);
                 credentialsSuccess.style.display = 'block';
                 if (credentialsError) credentialsError.style.display = 'none';
                 newAdminUsername.value = '';
