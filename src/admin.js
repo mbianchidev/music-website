@@ -116,17 +116,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const newAdminUsername = document.getElementById('new-admin-username');
     const newAdminPassword = document.getElementById('new-admin-password');
     const credentialsSuccess = document.getElementById('credentials-success');
+
+    // Derive a non-reversible hash of the password before storing it.
+    async function hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    }
     
     if (adminCredentialsForm) {
-        adminCredentialsForm.addEventListener('submit', function(e) {
+        adminCredentialsForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const username = newAdminUsername.value.trim();
             const password = newAdminPassword.value;
             
             if (username.length >= 3 && password.length >= 6) {
+                const hashedPassword = await hashPassword(password);
                 localStorage.setItem('adminUsername', username);
-                localStorage.setItem('adminPassword', password);
+                localStorage.setItem('adminPassword', hashedPassword);
                 credentialsSuccess.style.display = 'block';
                 newAdminUsername.value = '';
                 newAdminPassword.value = '';
