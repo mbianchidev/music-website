@@ -120,6 +120,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Note: Passwords are stored in plaintext in localStorage to remain
     // compatible with the existing login validation and resource handling.
+    // WARNING: Client-side password storage is inherently insecure as localStorage
+    // can be accessed via browser developer tools. For production use with sensitive
+    // content, implement server-side authentication (e.g., Firebase Auth, Auth0).
     if (adminCredentialsForm) {
         adminCredentialsForm.addEventListener('submit', function(e) {
             e.preventDefault();
