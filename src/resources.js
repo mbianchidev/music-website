@@ -164,26 +164,42 @@ function viewPdf(index) {
     const resource = resources[index];
     
     if (resource && resource.data) {
-        // Create modal for PDF viewing
+        // Store reference to the button that opened the modal for focus return
+        const triggerButton = document.activeElement;
+        
+        // Create modal for PDF viewing with accessibility attributes
         const modal = document.createElement('div');
         modal.className = 'pdf-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'pdf-modal-title');
         
         const modalContent = document.createElement('div');
         modalContent.className = 'pdf-modal-content';
         
-        // Close button
+        // Close button with accessibility
         const closeBtn = document.createElement('button');
         closeBtn.className = 'modal-close';
+        closeBtn.setAttribute('aria-label', 'Close');
         closeBtn.innerHTML = '&times;';
-        closeBtn.addEventListener('click', () => {
+        
+        // Function to close modal and restore focus
+        const closeModal = () => {
             document.body.removeChild(modal);
             document.body.classList.remove('modal-open');
-        });
+            // Return focus to the button that opened the modal
+            if (triggerButton && typeof triggerButton.focus === 'function') {
+                triggerButton.focus();
+            }
+        };
         
-        // PDF title
+        closeBtn.addEventListener('click', closeModal);
+        
+        // PDF title with id for aria-labelledby
         const title = document.createElement('h3');
         title.textContent = resource.title;
         title.className = 'pdf-title';
+        title.id = 'pdf-modal-title';
         
         // PDF embed
         const pdfEmbed = document.createElement('iframe');
@@ -207,11 +223,33 @@ function viewPdf(index) {
         document.body.appendChild(modal);
         document.body.classList.add('modal-open');
         
+        // Focus the close button when modal opens for keyboard accessibility
+        closeBtn.focus();
+        
+        // Trap focus within modal
+        modal.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+            if (e.key === 'Tab') {
+                const focusableElements = modal.querySelectorAll('button, a, iframe');
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+                
+                if (e.shiftKey && document.activeElement === firstElement) {
+                    e.preventDefault();
+                    lastElement.focus();
+                } else if (!e.shiftKey && document.activeElement === lastElement) {
+                    e.preventDefault();
+                    firstElement.focus();
+                }
+            }
+        });
+        
         // Close modal on background click
         modal.addEventListener('click', function(e) {
             if (e.target === modal) {
-                document.body.removeChild(modal);
-                document.body.classList.remove('modal-open');
+                closeModal();
             }
         });
     }

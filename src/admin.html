@@ -45,10 +45,10 @@
                 <p>Enter your credentials to access the admin panel.</p>
                 <form id="admin-login-form" class="admin-form">
                     <div class="form-group">
-                        <input type="text" id="admin-username" name="username" placeholder="Username" required>
+                        <input type="text" id="admin-username" name="username" placeholder="Username" required autocomplete="username">
                     </div>
                     <div class="form-group">
-                        <input type="password" id="admin-password" name="password" placeholder="Password" required>
+                        <input type="password" id="admin-password" name="password" placeholder="Password" required autocomplete="current-password">
                     </div>
                     <button type="submit" class="btn btn-submit">LOGIN</button>
                 </form>
@@ -84,14 +84,15 @@
                 <p>Update your admin login credentials. Remember to save these securely!</p>
                 <form id="admin-credentials-form" class="admin-form">
                     <div class="form-group">
-                        <input type="text" id="new-admin-username" name="new-admin-username" placeholder="New admin username" required>
+                        <input type="text" id="new-admin-username" name="new-admin-username" placeholder="New admin username" required autocomplete="new-password">
                     </div>
                     <div class="form-group">
-                        <input type="password" id="new-admin-password" name="new-admin-password" placeholder="New admin password" required>
+                        <input type="password" id="new-admin-password" name="new-admin-password" placeholder="New admin password" required autocomplete="new-password">
                     </div>
                     <button type="submit" class="btn btn-primary">UPDATE CREDENTIALS</button>
                 </form>
                 <p id="credentials-success" class="success-message" style="display: none;">Admin credentials updated! Use them on next login.</p>
+                <p id="credentials-error" class="error-message" style="display: none;">Username must be at least 5 characters and password at least 8 characters.</p>
             </div>
             
             <!-- PDF Upload Section -->

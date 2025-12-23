@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const newPassword = newResourcePassword.value;
             
-            if (newPassword.length >= 4) {
+            if (newPassword.length >= 8) {
                 localStorage.setItem('resourcePassword', newPassword);
                 passwordSuccess.style.display = 'block';
                 newResourcePassword.value = '';
@@ -116,29 +116,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const newAdminUsername = document.getElementById('new-admin-username');
     const newAdminPassword = document.getElementById('new-admin-password');
     const credentialsSuccess = document.getElementById('credentials-success');
-
-    // Derive a non-reversible hash of the password before storing it.
-    async function hashPassword(password) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(password);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex;
-    }
+    const credentialsError = document.getElementById('credentials-error');
     
+    // Note: Passwords are stored in plaintext in localStorage to remain
+    // compatible with the existing login validation and resource handling.
     if (adminCredentialsForm) {
-        adminCredentialsForm.addEventListener('submit', async function(e) {
+        adminCredentialsForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             const username = newAdminUsername.value.trim();
             const password = newAdminPassword.value;
             
-            if (username.length >= 3 && password.length >= 6) {
-                const hashedPassword = await hashPassword(password);
+            if (username.length >= 5 && password.length >= 8) {
                 localStorage.setItem('adminUsername', username);
-                localStorage.setItem('adminPassword', hashedPassword);
+                localStorage.setItem('adminPassword', password);
                 credentialsSuccess.style.display = 'block';
+                if (credentialsError) credentialsError.style.display = 'none';
                 newAdminUsername.value = '';
                 newAdminPassword.value = '';
                 
@@ -146,7 +139,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     credentialsSuccess.style.display = 'none';
                 }, 3000);
             } else {
-                alert('Username must be at least 3 characters and password at least 6 characters.');
+                if (credentialsError) {
+                    credentialsError.textContent = 'Username must be at least 5 characters and password at least 8 characters.';
+                    credentialsError.style.display = 'block';
+                    setTimeout(() => {
+                        credentialsError.style.display = 'none';
+                    }, 3000);
+                }
             }
         });
     }
@@ -228,7 +227,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 3000);
                 } catch (error) {
                     console.error('Error saving PDF:', error);
-                    uploadError.textContent = 'Error saving PDF. Storage might be full.';
+                    const isQuotaError =
+                        error &&
+                        (error.name === 'QuotaExceededError' ||
+                         error.name === 'QUOTA_EXCEEDED_ERR' ||
+                         error.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+                         error.code === 22 ||
+                         error.code === 1014);
+                    if (isQuotaError) {
+                        uploadError.textContent = 'Unable to save PDF because browser storage is full. Please delete some existing resources (for example, previously uploaded PDFs) on this page and then try uploading again.';
+                    } else {
+                        uploadError.textContent = 'Error saving PDF. Please try again.';
+                    }
                     uploadError.style.display = 'block';
                 }
             };
