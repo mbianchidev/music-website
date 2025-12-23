@@ -274,72 +274,81 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        adminResourcesList.innerHTML = resources.map((resource, index) => `
-            <div class="resource-card admin-resource-card">
-                <div class="resource-icon">
-                    <i class="fas fa-file-pdf"></i>
-                </div>
-                <div class="resource-info">
-                    <h4>${escapeHtml(resource.title)}</h4>
-                    <p>${escapeHtml(resource.description || 'No description provided.')}</p>
-                    <span class="resource-date">Added: ${new Date(resource.dateAdded).toLocaleDateString()}</span>
-                    <span class="resource-file">${escapeHtml(resource.fileName || 'Unknown file')}</span>
-                </div>
-                <div class="resource-actions">
-                    <button class="btn btn-delete" onclick="deleteResource(${index})">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </div>
-            </div>
-        `).join('');
-    }
+        // Clear existing content
+        adminResourcesList.innerHTML = '';
 
-    // Escape HTML to prevent XSS
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+        resources.forEach((resource, index) => {
+            const card = document.createElement('div');
+            card.className = 'resource-card admin-resource-card';
+
+            const iconContainer = document.createElement('div');
+            iconContainer.className = 'resource-icon';
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-file-pdf';
+            iconContainer.appendChild(icon);
+
+            const info = document.createElement('div');
+            info.className = 'resource-info';
+
+            const titleEl = document.createElement('h4');
+            titleEl.textContent = resource.title;
+
+            const descriptionEl = document.createElement('p');
+            descriptionEl.textContent = resource.description || 'No description provided.';
+
+            const dateEl = document.createElement('span');
+            dateEl.className = 'resource-date';
+            dateEl.textContent = 'Added: ' + new Date(resource.dateAdded).toLocaleDateString();
+
+            const fileEl = document.createElement('span');
+            fileEl.className = 'resource-file';
+            fileEl.textContent = resource.fileName || 'Unknown file';
+
+            info.appendChild(titleEl);
+            info.appendChild(descriptionEl);
+            info.appendChild(dateEl);
+            info.appendChild(fileEl);
+
+            const actions = document.createElement('div');
+            actions.className = 'resource-actions';
+
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'btn btn-delete';
+            deleteButton.type = 'button';
+            deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete';
+            deleteButton.addEventListener('click', function() {
+                deleteResource(index, loadAdminResources);
+            });
+
+            actions.appendChild(deleteButton);
+
+            card.appendChild(iconContainer);
+            card.appendChild(info);
+            card.appendChild(actions);
+
+            adminResourcesList.appendChild(card);
+        });
     }
 });
 
 // Delete resource function (global scope for onclick)
-function deleteResource(index) {
+function deleteResource(index, refreshCallback) {
     if (confirm('Are you sure you want to delete this resource? This action cannot be undone.')) {
         const resources = JSON.parse(localStorage.getItem('pdfResources') || '[]');
         resources.splice(index, 1);
         localStorage.setItem('pdfResources', JSON.stringify(resources));
         
-        // Refresh the resources list by rebuilding the HTML
-        const adminResourcesList = document.getElementById('admin-resources-list');
-        if (resources.length === 0) {
-            adminResourcesList.innerHTML = '<p class="no-resources">No resources uploaded yet.</p>';
+        // Refresh the resources list using the provided callback
+        if (typeof refreshCallback === 'function') {
+            refreshCallback();
         } else {
-            // Rebuild the list with updated indices
-            adminResourcesList.innerHTML = resources.map((resource, idx) => `
-                <div class="resource-card admin-resource-card">
-                    <div class="resource-icon">
-                        <i class="fas fa-file-pdf"></i>
-                    </div>
-                    <div class="resource-info">
-                        <h4>${escapeHtmlGlobal(resource.title)}</h4>
-                        <p>${escapeHtmlGlobal(resource.description || 'No description provided.')}</p>
-                        <span class="resource-date">Added: ${new Date(resource.dateAdded).toLocaleDateString()}</span>
-                        <span class="resource-file">${escapeHtmlGlobal(resource.fileName || 'Unknown file')}</span>
-                    </div>
-                    <div class="resource-actions">
-                        <button class="btn btn-delete" onclick="deleteResource(${idx})">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+            // Fallback: reload the page if no callback provided
+            const adminResourcesList = document.getElementById('admin-resources-list');
+            if (resources.length === 0) {
+                adminResourcesList.innerHTML = '<p class="no-resources">No resources uploaded yet.</p>';
+            } else {
+                window.location.reload();
+            }
         }
     }
-}
-
-// Helper function for escaping HTML in global scope
-function escapeHtmlGlobal(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }

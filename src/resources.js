@@ -103,30 +103,55 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        resourcesList.innerHTML = resources.map((resource, index) => `
-            <div class="resource-card">
-                <div class="resource-icon">
-                    <i class="fas fa-file-pdf"></i>
-                </div>
-                <div class="resource-info">
-                    <h4>${escapeHtml(resource.title)}</h4>
-                    <p>${escapeHtml(resource.description || 'No description provided.')}</p>
-                    <span class="resource-date">Added: ${new Date(resource.dateAdded).toLocaleDateString()}</span>
-                </div>
-                <div class="resource-actions">
-                    <button class="btn btn-view" onclick="viewPdf(${index})">
-                        <i class="fas fa-eye"></i> View
-                    </button>
-                </div>
-            </div>
-        `).join('');
-    }
+        // Clear existing content
+        resourcesList.innerHTML = '';
 
-    // Escape HTML to prevent XSS
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+        resources.forEach((resource, index) => {
+            const card = document.createElement('div');
+            card.className = 'resource-card';
+
+            const iconContainer = document.createElement('div');
+            iconContainer.className = 'resource-icon';
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-file-pdf';
+            iconContainer.appendChild(icon);
+
+            const info = document.createElement('div');
+            info.className = 'resource-info';
+
+            const titleEl = document.createElement('h4');
+            titleEl.textContent = resource.title;
+
+            const descriptionEl = document.createElement('p');
+            descriptionEl.textContent = resource.description || 'No description provided.';
+
+            const dateEl = document.createElement('span');
+            dateEl.className = 'resource-date';
+            dateEl.textContent = 'Added: ' + new Date(resource.dateAdded).toLocaleDateString();
+
+            info.appendChild(titleEl);
+            info.appendChild(descriptionEl);
+            info.appendChild(dateEl);
+
+            const actions = document.createElement('div');
+            actions.className = 'resource-actions';
+
+            const viewButton = document.createElement('button');
+            viewButton.className = 'btn btn-view';
+            viewButton.type = 'button';
+            viewButton.innerHTML = '<i class="fas fa-eye"></i> View';
+            viewButton.addEventListener('click', function() {
+                viewPdf(index);
+            });
+
+            actions.appendChild(viewButton);
+
+            card.appendChild(iconContainer);
+            card.appendChild(info);
+            card.appendChild(actions);
+
+            resourcesList.appendChild(card);
+        });
     }
 });
 
