@@ -11,12 +11,23 @@ const MAX_PDF_SIZE_BYTES = MAX_PDF_SIZE_MB * 1024 * 1024;
 
 // Hash a password using SHA-256 (async)
 async function hashPassword(password) {
+    // Ensure Web Crypto API is available before attempting to use it
+    if (typeof crypto === 'undefined' || !crypto.subtle || typeof crypto.subtle.digest !== 'function') {
+        throw new Error('Secure hashing is not supported in this environment (Web Crypto API unavailable).');
+    }
+
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    return hashHex;
+
+    try {
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    } catch (err) {
+        console.error('Failed to hash password using SHA-256:', err);
+        throw new Error('Failed to hash password securely.');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -91,11 +102,20 @@ document.addEventListener('DOMContentLoaded', function() {
             // Hash the entered password to compare with stored hash
             const hashedPassword = await hashPassword(password);
             
-            // Check if credentials match (supports both hashed and legacy plaintext)
+            // Determine whether the stored password is a SHA-256 hash (64 hex chars) or legacy plaintext
+            const isStoredHash = /^[0-9a-f]{64}$/i.test(ADMIN_PASSWORD);
+            
+            // Check if credentials match (hashed by default; support legacy plaintext only for migration)
             const isValidUser = username === ADMIN_USERNAME;
-            const isValidPassword = hashedPassword === ADMIN_PASSWORD || password === ADMIN_PASSWORD;
+            const isValidPassword = isStoredHash
+                ? hashedPassword === ADMIN_PASSWORD
+                : password === ADMIN_PASSWORD;
             
             if (isValidUser && isValidPassword) {
+                // If we just authenticated against a legacy plaintext password, migrate it to a hash
+                if (!isStoredHash) {
+                    localStorage.setItem('adminPassword', hashedPassword);
+                }
                 // Success - show dashboard
                 sessionStorage.setItem('adminAuthenticated', 'true');
                 showDashboard();
@@ -172,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 3000);
             } else {
                 if (credentialsError) {
-                    credentialsError.textContent = 'Username must be at least ' + MIN_USERNAME_LENGTH + ' characters and password at least ' + MIN_PASSWORD_LENGTH + ' characters.';
+                    credentialsError.textContent = `Username must be at least ${MIN_USERNAME_LENGTH} characters and password at least ${MIN_PASSWORD_LENGTH} characters.`;
                     credentialsError.style.display = 'block';
                     setTimeout(() => {
                         credentialsError.style.display = 'none';
@@ -214,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Validate title length
             if (title.length > MAX_TITLE_LENGTH) {
-                uploadError.textContent = 'Title must be ' + MAX_TITLE_LENGTH + ' characters or fewer.';
+                uploadError.textContent = `Title must be ${MAX_TITLE_LENGTH} characters or fewer.`;
                 uploadError.style.display = 'block';
                 return;
             }
@@ -233,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Check file size (limit for localStorage storage constraints)
             if (file.size > MAX_PDF_SIZE_BYTES) {
-                uploadError.textContent = 'File size exceeds ' + MAX_PDF_SIZE_MB + 'MB limit. Please use a smaller file.';
+                uploadError.textContent = `File size exceeds ${MAX_PDF_SIZE_MB}MB limit. Please use a smaller file.`;
                 uploadError.style.display = 'block';
                 return;
             }
@@ -356,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const dateEl = document.createElement('span');
             dateEl.className = 'resource-date';
-            dateEl.textContent = 'Added: ' + new Date(resource.dateAdded).toLocaleDateString();
+            dateEl.textContent = `Added: ${new Date(resource.dateAdded).toLocaleDateString()}`;
 
             const fileEl = document.createElement('span');
             fileEl.className = 'resource-file';

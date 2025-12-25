@@ -2,12 +2,24 @@
 
 // Hash a password using SHA-256 (async)
 async function hashPassword(password) {
+    // Ensure Web Crypto API is available before attempting to use it
+    if (typeof crypto === 'undefined' || !crypto.subtle || typeof crypto.subtle.digest !== 'function') {
+        throw new Error('Secure password hashing is not supported in this environment.');
+    }
+
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    return hashHex;
+
+    try {
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    } catch (err) {
+        // Re-throw a clearer error while preserving original error for debugging
+        console.error('Error computing password hash using Web Crypto API:', err);
+        throw new Error('Failed to compute password hash.');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -68,10 +80,19 @@ document.addEventListener('DOMContentLoaded', function() {
             // Hash the entered password to compare with stored hash
             const hashedPassword = await hashPassword(enteredPassword);
             
-            // Check if password matches (supports both hashed and legacy plaintext)
-            const isValid = hashedPassword === storedPassword || enteredPassword === storedPassword;
+            // Determine whether the stored password is a SHA-256 hash (64 hex chars) or legacy plaintext
+            const isStoredHash = /^[0-9a-f]{64}$/i.test(storedPassword);
+
+            // Check if password matches (hashed by default; support legacy plaintext only for migration)
+            const isValid = isStoredHash
+                ? hashedPassword === storedPassword
+                : enteredPassword === storedPassword;
             
             if (isValid) {
+                // If we just authenticated against a legacy plaintext password, migrate it to a hash
+                if (!isStoredHash) {
+                    localStorage.setItem('resourcePassword', hashedPassword);
+                }
                 // Success - show protected content
                 sessionStorage.setItem('resourcesAuthenticated', 'true');
                 showProtectedContent();
@@ -155,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const dateEl = document.createElement('span');
             dateEl.className = 'resource-date';
-            dateEl.textContent = 'Added: ' + new Date(resource.dateAdded).toLocaleDateString();
+            dateEl.textContent = `Added: ${new Date(resource.dateAdded).toLocaleDateString()}`;
 
             info.appendChild(titleEl);
             info.appendChild(descriptionEl);
@@ -205,11 +226,11 @@ function viewPdf(index) {
         const modalContent = document.createElement('div');
         modalContent.className = 'pdf-modal-content';
         
-        // Close button with accessibility
+        // Close button with accessibility (use textContent instead of innerHTML for security)
         const closeBtn = document.createElement('button');
         closeBtn.className = 'modal-close';
         closeBtn.setAttribute('aria-label', 'Close');
-        closeBtn.innerHTML = '&times;';
+        closeBtn.textContent = '×';
         
         // Function to close modal and restore focus
         const closeModal = () => {
@@ -229,19 +250,22 @@ function viewPdf(index) {
         title.className = 'pdf-title';
         title.id = 'pdf-modal-title';
         
-        // PDF embed with sandbox for security
+        // PDF embed with sandbox for security (no allow-scripts for defense-in-depth)
         const pdfEmbed = document.createElement('iframe');
         pdfEmbed.src = resource.data;
         pdfEmbed.className = 'pdf-viewer';
         pdfEmbed.title = resource.title;
-        pdfEmbed.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-popups allow-forms');
+        pdfEmbed.setAttribute('sandbox', 'allow-same-origin allow-popups allow-forms');
         
-        // Download button
+        // Download button (using DOM manipulation instead of innerHTML for security consistency)
         const downloadBtn = document.createElement('a');
         downloadBtn.href = resource.data;
-        downloadBtn.download = resource.title + '.pdf';
+        downloadBtn.download = `${resource.title}.pdf`;
         downloadBtn.className = 'btn btn-primary download-btn';
-        downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download PDF';
+        const downloadIcon = document.createElement('i');
+        downloadIcon.className = 'fas fa-download';
+        downloadBtn.appendChild(downloadIcon);
+        downloadBtn.appendChild(document.createTextNode(' Download PDF'));
         
         // Append elements
         modalContent.appendChild(closeBtn);
