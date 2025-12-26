@@ -103,14 +103,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Hash the entered password to compare with stored hash
                 const hashedPassword = await hashPassword(password);
                 
+                // Always read the latest stored credentials from localStorage, falling back to initial constants
+                const storedUsername = localStorage.getItem('adminUsername') || ADMIN_USERNAME;
+                const storedPassword = localStorage.getItem('adminPassword') || ADMIN_PASSWORD;
+                
                 // Determine whether the stored password is a SHA-256 hash (64 hex chars) or legacy plaintext
-                const isStoredHash = /^[0-9a-f]{64}$/i.test(ADMIN_PASSWORD);
+                const isStoredHash = /^[0-9a-f]{64}$/i.test(storedPassword);
                 
                 // Check if credentials match (hashed by default; support legacy plaintext only for migration)
-                const isValidUser = username === ADMIN_USERNAME;
+                const isValidUser = username === storedUsername;
                 const isValidPassword = isStoredHash
-                    ? hashedPassword === ADMIN_PASSWORD
-                    : password === ADMIN_PASSWORD;
+                    ? hashedPassword === storedPassword
+                    : password === storedPassword;
                 
                 if (isValidUser && isValidPassword) {
                     // If we just authenticated against a legacy plaintext password, migrate it to a hash
@@ -386,6 +390,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load resources for admin view
     function loadAdminResources() {
+        // Check if adminResourcesList element exists
+        if (!adminResourcesList) {
+            console.warn('Admin resources list element not found in the DOM.');
+            return;
+        }
+        
         let resources = [];
         const storedResources = localStorage.getItem('pdfResources');
         
@@ -468,10 +478,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Delete resource function (global scope for onclick)
+// Delete resource function (global scope so event listeners/closures can call it)
 function deleteResource(index, refreshCallback) {
     if (confirm('Are you sure you want to delete this resource? This action cannot be undone.')) {
-        const resources = JSON.parse(localStorage.getItem('pdfResources') || '[]');
+        let resources = [];
+        const storedResources = localStorage.getItem('pdfResources');
+        if (storedResources) {
+            try {
+                resources = JSON.parse(storedResources);
+            } catch (err) {
+                console.error('Failed to parse pdfResources from localStorage in deleteResource:', err);
+                resources = [];
+            }
+        }
+        
         resources.splice(index, 1);
         localStorage.setItem('pdfResources', JSON.stringify(resources));
         
@@ -479,14 +499,18 @@ function deleteResource(index, refreshCallback) {
         if (typeof refreshCallback === 'function') {
             refreshCallback();
         } else {
-            // Fallback: rebuild the list manually
+            // Fallback: rebuild the list manually using DOM APIs
             const adminResourcesList = document.getElementById('admin-resources-list');
             if (adminResourcesList) {
+                // Clear existing content using DOM APIs (not innerHTML)
+                while (adminResourcesList.firstChild) {
+                    adminResourcesList.removeChild(adminResourcesList.firstChild);
+                }
+                
                 if (resources.length === 0) {
                     const noResourcesMsg = document.createElement('p');
                     noResourcesMsg.className = 'no-resources';
                     noResourcesMsg.textContent = 'No resources uploaded yet.';
-                    adminResourcesList.innerHTML = '';
                     adminResourcesList.appendChild(noResourcesMsg);
                 }
                 // If there are still resources but no callback, the list will be stale

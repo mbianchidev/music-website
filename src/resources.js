@@ -156,6 +156,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load resources from localStorage
     function loadResources() {
+        // Check if resourcesList element exists
+        if (!resourcesList) {
+            console.error('resourcesList element not found in the DOM.');
+            return;
+        }
+        
         let resources = [];
         const storedResources = localStorage.getItem('pdfResources');
 
