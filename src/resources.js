@@ -293,12 +293,12 @@ function viewPdf(index) {
         title.className = 'pdf-title';
         title.id = 'pdf-modal-title';
         
-        // PDF embed with sandbox for security (omit allow-same-origin so untrusted content cannot access localStorage)
+        // PDF embed with sandbox for security (empty sandbox for maximum restriction - no scripts, no same-origin access)
         const pdfEmbed = document.createElement('iframe');
         pdfEmbed.src = resource.data;
         pdfEmbed.className = 'pdf-viewer';
         pdfEmbed.title = resource.title;
-        pdfEmbed.setAttribute('sandbox', 'allow-popups allow-forms');
+        pdfEmbed.setAttribute('sandbox', '');
         
         // Download button (using DOM manipulation instead of innerHTML for security consistency)
         const downloadBtn = document.createElement('a');

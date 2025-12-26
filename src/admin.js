@@ -4,6 +4,7 @@
 const MIN_USERNAME_LENGTH = 5;
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_TITLE_LENGTH = 200;
+const MAX_DESCRIPTION_LENGTH = 500;
 // localStorage typically allows 5-10MB total; we limit individual PDFs to 5MB 
 // to leave room for multiple files and other data
 const MAX_PDF_SIZE_MB = 5;
@@ -284,6 +285,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Validate description length
+            if (description.length > MAX_DESCRIPTION_LENGTH) {
+                uploadError.textContent = `Description must be ${MAX_DESCRIPTION_LENGTH} characters or fewer.`;
+                uploadError.style.display = 'block';
+                return;
+            }
+            
             if (!file) {
                 uploadError.textContent = 'Please select a PDF file.';
                 uploadError.style.display = 'block';
@@ -481,6 +489,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // Delete resource function (global scope so event listeners/closures can call it)
 function deleteResource(index, refreshCallback) {
     if (confirm('Are you sure you want to delete this resource? This action cannot be undone.')) {
+        // Disable all delete buttons to prevent race conditions during deletion
+        const allDeleteButtons = document.querySelectorAll('.btn-delete');
+        allDeleteButtons.forEach(btn => {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        });
+        
         let resources = [];
         const storedResources = localStorage.getItem('pdfResources');
         if (storedResources) {

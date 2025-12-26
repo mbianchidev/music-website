@@ -45,9 +45,11 @@
                 <p>Enter your credentials to access the admin panel.</p>
                 <form id="admin-login-form" class="admin-form">
                     <div class="form-group">
+                        <label for="admin-username" class="visually-hidden">Username</label>
                         <input type="text" id="admin-username" name="username" placeholder="Username" required autocomplete="username">
                     </div>
                     <div class="form-group">
+                        <label for="admin-password" class="visually-hidden">Password</label>
                         <input type="password" id="admin-password" name="password" placeholder="Password" required autocomplete="current-password">
                     </div>
                     <button type="submit" class="btn btn-submit">LOGIN</button>
@@ -110,7 +112,7 @@
                     </div>
                     <div class="form-group">
                         <label for="pdf-description" class="visually-hidden">Description (optional)</label>
-                        <textarea id="pdf-description" name="pdf-description" placeholder="Description (optional)" rows="3"></textarea>
+                        <textarea id="pdf-description" name="pdf-description" placeholder="Description (optional)" rows="3" maxlength="500"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="pdf-file" class="file-upload-label">
