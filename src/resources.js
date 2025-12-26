@@ -78,7 +78,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Hash the entered password to compare with stored hash
-            const hashedPassword = await hashPassword(enteredPassword);
+            let hashedPassword;
+            try {
+                hashedPassword = await hashPassword(enteredPassword);
+            } catch (err) {
+                console.error('Failed to hash entered password:', err);
+                if (passwordError) {
+                    passwordError.textContent = 'Unable to verify password in this browser. Please try again later or use a different device.';
+                    passwordError.style.display = 'block';
+                }
+                passwordInput.value = '';
+                return;
+            }
             
             // Determine whether the stored password is a SHA-256 hash (64 hex chars) or legacy plaintext
             const isStoredHash = /^[0-9a-f]{64}$/i.test(storedPassword);
@@ -145,15 +156,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load resources from localStorage
     function loadResources() {
-        const resources = JSON.parse(localStorage.getItem('pdfResources') || '[]');
+        let resources = [];
+        const storedResources = localStorage.getItem('pdfResources');
+
+        if (storedResources) {
+            try {
+                resources = JSON.parse(storedResources);
+            } catch (err) {
+                console.error('Failed to parse pdfResources from localStorage:', err);
+                resources = [];
+            }
+        }
         
-        if (resources.length === 0) {
-            resourcesList.innerHTML = '<p class="no-resources">No resources available yet. Check back soon!</p>';
-            return;
+        // Clear existing content
+        while (resourcesList.firstChild) {
+            resourcesList.removeChild(resourcesList.firstChild);
         }
 
-        // Clear existing content
-        resourcesList.innerHTML = '';
+        if (resources.length === 0) {
+            const noResourcesMessage = document.createElement('p');
+            noResourcesMessage.className = 'no-resources';
+            noResourcesMessage.textContent = 'No resources available yet. Check back soon!';
+            resourcesList.appendChild(noResourcesMessage);
+            return;
+        }
 
         resources.forEach((resource, index) => {
             const card = document.createElement('div');
@@ -209,7 +235,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // View PDF function (global scope for onclick)
 function viewPdf(index) {
-    const resources = JSON.parse(localStorage.getItem('pdfResources') || '[]');
+    let resources = [];
+    const storedResources = localStorage.getItem('pdfResources');
+    
+    if (storedResources) {
+        try {
+            resources = JSON.parse(storedResources);
+        } catch (err) {
+            console.error('Failed to parse pdfResources from localStorage:', err);
+            return;
+        }
+    }
+    
     const resource = resources[index];
     
     if (resource && resource.data) {
@@ -250,12 +287,12 @@ function viewPdf(index) {
         title.className = 'pdf-title';
         title.id = 'pdf-modal-title';
         
-        // PDF embed with sandbox for security (no allow-scripts for defense-in-depth)
+        // PDF embed with sandbox for security (omit allow-same-origin so untrusted content cannot access localStorage)
         const pdfEmbed = document.createElement('iframe');
         pdfEmbed.src = resource.data;
         pdfEmbed.className = 'pdf-viewer';
         pdfEmbed.title = resource.title;
-        pdfEmbed.setAttribute('sandbox', 'allow-same-origin allow-popups allow-forms');
+        pdfEmbed.setAttribute('sandbox', 'allow-popups allow-forms');
         
         // Download button (using DOM manipulation instead of innerHTML for security consistency)
         const downloadBtn = document.createElement('a');
@@ -286,6 +323,13 @@ function viewPdf(index) {
             }
             if (e.key === 'Tab') {
                 const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                
+                // Guard against empty focusableElements
+                if (focusableElements.length === 0) {
+                    e.preventDefault();
+                    return;
+                }
+                
                 const firstElement = focusableElements[0];
                 const lastElement = focusableElements[focusableElements.length - 1];
                 

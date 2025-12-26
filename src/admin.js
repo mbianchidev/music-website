@@ -99,32 +99,41 @@ document.addEventListener('DOMContentLoaded', function() {
             const username = usernameInput.value;
             const password = passwordInput.value;
             
-            // Hash the entered password to compare with stored hash
-            const hashedPassword = await hashPassword(password);
-            
-            // Determine whether the stored password is a SHA-256 hash (64 hex chars) or legacy plaintext
-            const isStoredHash = /^[0-9a-f]{64}$/i.test(ADMIN_PASSWORD);
-            
-            // Check if credentials match (hashed by default; support legacy plaintext only for migration)
-            const isValidUser = username === ADMIN_USERNAME;
-            const isValidPassword = isStoredHash
-                ? hashedPassword === ADMIN_PASSWORD
-                : password === ADMIN_PASSWORD;
-            
-            if (isValidUser && isValidPassword) {
-                // If we just authenticated against a legacy plaintext password, migrate it to a hash
-                if (!isStoredHash) {
-                    localStorage.setItem('adminPassword', hashedPassword);
+            try {
+                // Hash the entered password to compare with stored hash
+                const hashedPassword = await hashPassword(password);
+                
+                // Determine whether the stored password is a SHA-256 hash (64 hex chars) or legacy plaintext
+                const isStoredHash = /^[0-9a-f]{64}$/i.test(ADMIN_PASSWORD);
+                
+                // Check if credentials match (hashed by default; support legacy plaintext only for migration)
+                const isValidUser = username === ADMIN_USERNAME;
+                const isValidPassword = isStoredHash
+                    ? hashedPassword === ADMIN_PASSWORD
+                    : password === ADMIN_PASSWORD;
+                
+                if (isValidUser && isValidPassword) {
+                    // If we just authenticated against a legacy plaintext password, migrate it to a hash
+                    if (!isStoredHash) {
+                        localStorage.setItem('adminPassword', hashedPassword);
+                    }
+                    // Success - show dashboard
+                    sessionStorage.setItem('adminAuthenticated', 'true');
+                    showDashboard();
+                    loginError.style.display = 'none';
+                    usernameInput.value = '';
+                    passwordInput.value = '';
+                } else {
+                    // Failed - show error
+                    loginError.style.display = 'block';
+                    passwordInput.value = '';
                 }
-                // Success - show dashboard
-                sessionStorage.setItem('adminAuthenticated', 'true');
-                showDashboard();
-                loginError.style.display = 'none';
-                usernameInput.value = '';
-                passwordInput.value = '';
-            } else {
-                // Failed - show error
-                loginError.style.display = 'block';
+            } catch (err) {
+                console.error('Error while hashing password during admin login:', err);
+                if (loginError) {
+                    loginError.textContent = 'Unable to verify credentials in this browser. Please try again later or use a different device.';
+                    loginError.style.display = 'block';
+                }
                 passwordInput.value = '';
             }
         });
@@ -144,17 +153,38 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const newPassword = newResourcePassword.value;
+            const passwordError = document.getElementById('password-error');
             
             if (newPassword.length >= MIN_PASSWORD_LENGTH) {
-                // Hash the password before storing for security
-                const hashedPassword = await hashPassword(newPassword);
-                localStorage.setItem('resourcePassword', hashedPassword);
-                passwordSuccess.style.display = 'block';
-                newResourcePassword.value = '';
-                
-                setTimeout(() => {
-                    passwordSuccess.style.display = 'none';
-                }, 3000);
+                try {
+                    // Hash the password before storing for security
+                    const hashedPassword = await hashPassword(newPassword);
+                    localStorage.setItem('resourcePassword', hashedPassword);
+                    passwordSuccess.style.display = 'block';
+                    if (passwordError) passwordError.style.display = 'none';
+                    newResourcePassword.value = '';
+                    
+                    setTimeout(() => {
+                        passwordSuccess.style.display = 'none';
+                    }, 3000);
+                } catch (err) {
+                    console.error('Error hashing resource password:', err);
+                    if (passwordError) {
+                        passwordError.textContent = 'Failed to securely process the password in this browser. Please try again using a different browser.';
+                        passwordError.style.display = 'block';
+                        setTimeout(() => {
+                            passwordError.style.display = 'none';
+                        }, 3000);
+                    }
+                }
+            } else {
+                if (passwordError) {
+                    passwordError.textContent = `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
+                    passwordError.style.display = 'block';
+                    setTimeout(() => {
+                        passwordError.style.display = 'none';
+                    }, 3000);
+                }
             }
         });
     }
@@ -178,18 +208,29 @@ document.addEventListener('DOMContentLoaded', function() {
             const password = newAdminPassword.value;
             
             if (username.length >= MIN_USERNAME_LENGTH && password.length >= MIN_PASSWORD_LENGTH) {
-                // Hash the password before storing for security
-                const hashedPassword = await hashPassword(password);
-                localStorage.setItem('adminUsername', username);
-                localStorage.setItem('adminPassword', hashedPassword);
-                credentialsSuccess.style.display = 'block';
-                if (credentialsError) credentialsError.style.display = 'none';
-                newAdminUsername.value = '';
-                newAdminPassword.value = '';
-                
-                setTimeout(() => {
-                    credentialsSuccess.style.display = 'none';
-                }, 3000);
+                try {
+                    // Hash the password before storing for security
+                    const hashedPassword = await hashPassword(password);
+                    localStorage.setItem('adminUsername', username);
+                    localStorage.setItem('adminPassword', hashedPassword);
+                    credentialsSuccess.style.display = 'block';
+                    if (credentialsError) credentialsError.style.display = 'none';
+                    newAdminUsername.value = '';
+                    newAdminPassword.value = '';
+                    
+                    setTimeout(() => {
+                        credentialsSuccess.style.display = 'none';
+                    }, 3000);
+                } catch (err) {
+                    console.error('Error hashing admin password:', err);
+                    if (credentialsError) {
+                        credentialsError.textContent = 'Failed to securely process the password in this browser. Please try again using a different browser or contact support.';
+                        credentialsError.style.display = 'block';
+                        setTimeout(() => {
+                            credentialsError.style.display = 'none';
+                        }, 3000);
+                    }
+                }
             } else {
                 if (credentialsError) {
                     credentialsError.textContent = `Username must be at least ${MIN_USERNAME_LENGTH} characters and password at least ${MIN_PASSWORD_LENGTH} characters.`;
@@ -345,15 +386,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load resources for admin view
     function loadAdminResources() {
-        const resources = JSON.parse(localStorage.getItem('pdfResources') || '[]');
+        let resources = [];
+        const storedResources = localStorage.getItem('pdfResources');
+        
+        if (storedResources) {
+            try {
+                resources = JSON.parse(storedResources);
+            } catch (err) {
+                console.error('Failed to parse pdfResources from localStorage:', err);
+                resources = [];
+            }
+        }
+        
+        // Clear existing content using DOM APIs
+        while (adminResourcesList.firstChild) {
+            adminResourcesList.removeChild(adminResourcesList.firstChild);
+        }
         
         if (resources.length === 0) {
-            adminResourcesList.innerHTML = '<p class="no-resources">No resources uploaded yet.</p>';
+            const noResourcesMessage = document.createElement('p');
+            noResourcesMessage.className = 'no-resources';
+            noResourcesMessage.textContent = 'No resources uploaded yet.';
+            adminResourcesList.appendChild(noResourcesMessage);
             return;
         }
-
-        // Clear existing content
-        adminResourcesList.innerHTML = '';
 
         resources.forEach((resource, index) => {
             const card = document.createElement('div');
