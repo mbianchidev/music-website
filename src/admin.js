@@ -1,4 +1,5 @@
 // Admin Page - Manage Resources
+// Note: hashPassword, initMobileMenuToggle, and updateCopyrightYear are defined in shared.js
 
 // Validation constants
 const MIN_USERNAME_LENGTH = 5;
@@ -10,51 +11,9 @@ const MAX_DESCRIPTION_LENGTH = 500;
 const MAX_PDF_SIZE_MB = 5;
 const MAX_PDF_SIZE_BYTES = MAX_PDF_SIZE_MB * 1024 * 1024;
 
-// Hash a password using SHA-256 (async)
-async function hashPassword(password) {
-    // Ensure Web Crypto API is available before attempting to use it
-    if (typeof crypto === 'undefined' || !crypto.subtle || typeof crypto.subtle.digest !== 'function') {
-        throw new Error('Secure hashing is not supported in this environment (Web Crypto API unavailable).');
-    }
-
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-
-    try {
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex;
-    } catch (err) {
-        console.error('Failed to hash password using SHA-256:', err);
-        throw new Error('Failed to hash password securely.');
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Update copyright year
-    const yearElement = document.getElementById('current-year');
-    if (yearElement) {
-        yearElement.textContent = new Date().getFullYear();
-    }
-
-    // Mobile menu toggle
-    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-    const navLinks = document.querySelector('.nav-links');
-    
-    if (mobileMenuToggle && navLinks) {
-        mobileMenuToggle.addEventListener('click', function() {
-            navLinks.classList.toggle('active');
-            const icon = this.querySelector('i');
-            if (navLinks.classList.contains('active')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-        });
-    }
+    // Initialize common elements (copyright year and mobile menu) from shared.js
+    initCommonElements();
 
     // DOM Elements
     const adminLogin = document.getElementById('admin-login');

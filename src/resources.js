@@ -1,51 +1,9 @@
 // Resources Page - Password Protected Content
-
-// Hash a password using SHA-256 (async)
-async function hashPassword(password) {
-    // Ensure Web Crypto API is available before attempting to use it
-    if (typeof crypto === 'undefined' || !crypto.subtle || typeof crypto.subtle.digest !== 'function') {
-        throw new Error('Secure password hashing is not supported in this environment.');
-    }
-
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-
-    try {
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex;
-    } catch (err) {
-        // Re-throw a clearer error while preserving original error for debugging
-        console.error('Error computing password hash using Web Crypto API:', err);
-        throw new Error('Failed to compute password hash.');
-    }
-}
+// Note: hashPassword, initMobileMenuToggle, and updateCopyrightYear are defined in shared.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Update copyright year
-    const yearElement = document.getElementById('current-year');
-    if (yearElement) {
-        yearElement.textContent = new Date().getFullYear();
-    }
-
-    // Mobile menu toggle
-    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-    const navLinks = document.querySelector('.nav-links');
-    
-    if (mobileMenuToggle && navLinks) {
-        mobileMenuToggle.addEventListener('click', function() {
-            navLinks.classList.toggle('active');
-            const icon = this.querySelector('i');
-            if (navLinks.classList.contains('active')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-        });
-    }
+    // Initialize common elements (copyright year and mobile menu) from shared.js
+    initCommonElements();
 
     // DOM Elements
     const passwordGate = document.getElementById('password-gate');
